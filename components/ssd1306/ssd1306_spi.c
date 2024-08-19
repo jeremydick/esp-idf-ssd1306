@@ -123,11 +123,13 @@ void spi_init(SSD1306_t * dev, int width, int height)
 	spi_master_write_command(dev, OLED_CONTROL_BYTE_DATA_STREAM);	// 40
 	if (dev->_flip) {
 		spi_master_write_command(dev, OLED_CMD_SET_SEGMENT_REMAP_0);	// A0
+		spi_master_write_command(dev, OLED_CMD_SET_COM_SCAN_MODE_0);	// C0
 	} else {
 		spi_master_write_command(dev, OLED_CMD_SET_SEGMENT_REMAP_1);	// A1
+		spi_master_write_command(dev, OLED_CMD_SET_COM_SCAN_MODE_1);	// C8
 	}
 	//spi_master_write_command(dev, OLED_CMD_SET_SEGMENT_REMAP);		// A1
-	spi_master_write_command(dev, OLED_CMD_SET_COM_SCAN_MODE);		// C8
+
 	spi_master_write_command(dev, OLED_CMD_SET_DISPLAY_CLK_DIV);	// D5
 	spi_master_write_command(dev, 0x80);
 	spi_master_write_command(dev, OLED_CMD_SET_COM_PIN_MAP);		// DA

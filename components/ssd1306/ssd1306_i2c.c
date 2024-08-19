@@ -62,10 +62,11 @@ void i2c_init(SSD1306_t * dev, int width, int height) {
 	//i2c_master_write_byte(cmd, OLED_CMD_SET_SEGMENT_REMAP, true);		// A1
 	if (dev->_flip) {
 		i2c_master_write_byte(cmd, OLED_CMD_SET_SEGMENT_REMAP_0, true);		// A0
+		i2c_master_write_byte(cmd, OLED_CMD_SET_COM_SCAN_MODE_0, true);     // C0
 	} else {
 		i2c_master_write_byte(cmd, OLED_CMD_SET_SEGMENT_REMAP_1, true);		// A1
+		i2c_master_write_byte(cmd, OLED_CMD_SET_COM_SCAN_MODE_1, true);		// C8
 	}
-	i2c_master_write_byte(cmd, OLED_CMD_SET_COM_SCAN_MODE, true);		// C8
 	i2c_master_write_byte(cmd, OLED_CMD_SET_DISPLAY_CLK_DIV, true);		// D5
 	i2c_master_write_byte(cmd, 0x80, true);
 	i2c_master_write_byte(cmd, OLED_CMD_SET_COM_PIN_MAP, true);			// DA

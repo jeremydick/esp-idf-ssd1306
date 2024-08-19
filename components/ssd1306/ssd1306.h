@@ -47,7 +47,8 @@ Usage:
 #define OLED_CMD_SET_SEGMENT_REMAP_0    0xA0    
 #define OLED_CMD_SET_SEGMENT_REMAP_1    0xA1    
 #define OLED_CMD_SET_MUX_RATIO          0xA8    // follow with 0x3F = 64 MUX
-#define OLED_CMD_SET_COM_SCAN_MODE      0xC8    
+#define OLED_CMD_SET_COM_SCAN_MODE_0    0xC0
+#define OLED_CMD_SET_COM_SCAN_MODE_1    0xC8    
 #define OLED_CMD_SET_DISPLAY_OFFSET     0xD3    // follow with 0x00
 #define OLED_CMD_SET_COM_PIN_MAP        0xDA    // follow with 0x12
 #define OLED_CMD_NOP                    0xE3    // NOP
