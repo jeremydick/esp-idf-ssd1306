@@ -113,6 +113,92 @@ void ssd1306_display_text(SSD1306_t * dev, int page, char * text, int text_len, 
 
 // by Coert Vonk
 void 
+ssd1306_display_text_x2(SSD1306_t * dev, int page, char * text, int text_len, bool invert)
+{
+#define MAX_SCALE (3)
+	uint8_t scale = 2;
+
+	if (page >= dev->_pages) return;
+	int _text_len = text_len;
+	if (_text_len > 12) _text_len = 12;
+
+	uint8_t seg = 0;
+
+	for (uint8_t nn = 0; nn < _text_len; nn++) {
+
+		uint8_t const * const in_columns = font8x8_basic_tr[(uint8_t)text[nn]];
+
+		// make the character 3x as high
+		out_column_t out_columns[8];
+		uint8_t used_columns = in_columns[8];
+		memset(out_columns, 0, sizeof(out_columns));
+
+		for (uint8_t xx = 0; xx < used_columns; xx++) { // for each column (x-direction)
+
+			uint32_t in_bitmask = 0b1;
+			uint32_t out_bitmask = (1 << scale) - 1;//0b111;
+
+			for (uint8_t yy = 0; yy < 8; yy++) { // for pixel (y-direction)
+				if (in_columns[xx] & in_bitmask) {
+					out_columns[xx].u32 |= out_bitmask;
+				}
+				in_bitmask <<= 1;
+				out_bitmask <<= scale;
+			}
+		}
+
+		// render character in 8 column high pieces, making them 3x as wide
+		for (uint8_t yy = 0; yy < scale; yy++)	{ // for each group of 8 pixels high (y-direction)
+
+			uint8_t image[8 * MAX_SCALE];
+			for (uint8_t xx = 0; xx < used_columns; xx++) { // for each column (x-direction)
+				for (uint8_t idx = 0; idx < scale; idx++) {
+					image[xx*scale+idx] = out_columns[xx].u8[yy];
+				}
+			}
+
+			if (invert) ssd1306_invert(image, used_columns * scale);
+			if (dev->_flip) ssd1306_flip(image, used_columns * scale);
+			if (dev->_address == SPIAddress) {
+				spi_display_image(dev, page+yy, seg, image, used_columns * scale);
+			} else {
+				i2c_display_image(dev, page+yy, seg, image, used_columns * scale);
+			}
+			memcpy(&dev->_page[page+yy]._segs[seg], image, used_columns * scale);
+		}
+		seg = seg + (used_columns * scale);
+	}
+	while (seg < 128)
+	{
+		uint8_t used_columns = (128 - seg) / scale;
+		if (used_columns > 8)
+		{
+			used_columns = 8;
+		}
+		// render character in 8 column high pieces, making them 3x as wide
+		for (uint8_t yy = 0; yy < 3; yy++)	{ // for each group of 8 pixels high (y-direction)
+
+			uint8_t image[8 * MAX_SCALE];
+			for (uint8_t xx = 0; xx < used_columns; xx++) { // for each column (x-direction)
+				for (uint8_t idx = 0; idx < scale; idx++) {
+					image[xx*scale+idx] = 0;
+				}
+			}
+
+			if (invert) ssd1306_invert(image, used_columns * scale);
+			if (dev->_flip) ssd1306_flip(image, used_columns * scale);
+			if (dev->_address == SPIAddress) {
+				spi_display_image(dev, page+yy, seg, image, used_columns * scale);
+			} else {
+				i2c_display_image(dev, page+yy, seg, image, used_columns * scale);
+			}
+			memcpy(&dev->_page[page+yy]._segs[seg], image, used_columns * scale);
+		}
+		seg += used_columns * 2;
+	}
+}
+
+void 
 ssd1306_display_text_x3(SSD1306_t * dev, int page, char * text, int text_len, bool invert)
 {
 	if (page >= dev->_pages) return;
