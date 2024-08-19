@@ -117,7 +117,7 @@ ssd1306_display_text_x3(SSD1306_t * dev, int page, char * text, int text_len, bo
 {
 	if (page >= dev->_pages) return;
 	int _text_len = text_len;
-	if (_text_len > 5) _text_len = 5;
+	if (_text_len > 7) _text_len = 7;
 
 	uint8_t seg = 0;
 
@@ -127,9 +127,10 @@ ssd1306_display_text_x3(SSD1306_t * dev, int page, char * text, int text_len, bo
 
 		// make the character 3x as high
 		out_column_t out_columns[8];
+		uint8_t used_columns = in_columns[8];
 		memset(out_columns, 0, sizeof(out_columns));
 
-		for (uint8_t xx = 0; xx < 8; xx++) { // for each column (x-direction)
+		for (uint8_t xx = 0; xx < used_columns; xx++) { // for each column (x-direction)
 
 			uint32_t in_bitmask = 0b1;
 			uint32_t out_bitmask = 0b111;
@@ -147,21 +148,50 @@ ssd1306_display_text_x3(SSD1306_t * dev, int page, char * text, int text_len, bo
 		for (uint8_t yy = 0; yy < 3; yy++)	{ // for each group of 8 pixels high (y-direction)
 
 			uint8_t image[24];
-			for (uint8_t xx = 0; xx < 8; xx++) { // for each column (x-direction)
+			for (uint8_t xx = 0; xx < used_columns; xx++) { // for each column (x-direction)
 				image[xx*3+0] = 
 				image[xx*3+1] = 
 				image[xx*3+2] = out_columns[xx].u8[yy];
 			}
-			if (invert) ssd1306_invert(image, 24);
-			if (dev->_flip) ssd1306_flip(image, 24);
+
+			if (invert) ssd1306_invert(image, used_columns * 3);
+			if (dev->_flip) ssd1306_flip(image, used_columns * 3);
 			if (dev->_address == SPIAddress) {
-				spi_display_image(dev, page+yy, seg, image, 24);
+				spi_display_image(dev, page+yy, seg, image, used_columns * 3);
 			} else {
-				i2c_display_image(dev, page+yy, seg, image, 24);
+				i2c_display_image(dev, page+yy, seg, image, used_columns * 3);
 			}
-			memcpy(&dev->_page[page+yy]._segs[seg], image, 24);
+			memcpy(&dev->_page[page+yy]._segs[seg], image, used_columns * 3);
 		}
-		seg = seg + 24;
+		seg = seg + (used_columns * 3);
+	}
+	while (seg < 126)
+	{
+		uint8_t used_columns = (126 - seg)/ 3;
+		if (used_columns > 8)
+		{
+			used_columns = 8;
+		}
+		// render character in 8 column high pieces, making them 3x as wide
+		for (uint8_t yy = 0; yy < 3; yy++)	{ // for each group of 8 pixels high (y-direction)
+
+			uint8_t image[24];
+			for (uint8_t xx = 0; xx < used_columns; xx++) { // for each column (x-direction)
+				image[xx*3+0] = 
+				image[xx*3+1] = 
+				image[xx*3+2] = 0;
+			}
+
+			if (invert) ssd1306_invert(image, used_columns * 3);
+			if (dev->_flip) ssd1306_flip(image, used_columns * 3);
+			if (dev->_address == SPIAddress) {
+				spi_display_image(dev, page+yy, seg, image, used_columns * 3);
+			} else {
+				i2c_display_image(dev, page+yy, seg, image, used_columns * 3);
+			}
+			memcpy(&dev->_page[page+yy]._segs[seg], image, used_columns * 3);
+		}
+		seg += used_columns * 3;
 	}
 }
 
