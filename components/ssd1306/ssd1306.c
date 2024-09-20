@@ -17,6 +17,11 @@ typedef union out_column_t {
 	uint8_t  u8[4];
 } PACK8 out_column_t;
 
+static void char_delay(void)
+{
+	vTaskDelay(1);
+}
+
 void ssd1306_init(SSD1306_t * dev, int width, int height)
 {
 	if (dev->_address == SPIAddress) {
@@ -97,6 +102,7 @@ void ssd1306_display_text(SSD1306_t * dev, int page, char * text, int text_len, 
 	uint8_t image[8];
 	for (uint8_t i = 0; i < _text_len; i++) {
 		memcpy(image, font8x8_basic_tr[(uint8_t)text[i]], 8);
+		char_delay();
 		if (invert) ssd1306_invert(image, 8);
 		if (dev->_flip) ssd1306_flip(image, 8);
 		ssd1306_display_image(dev, page, seg, image, 8);
@@ -147,6 +153,7 @@ ssd1306_display_text_xS(SSD1306_t * dev, int page, char * text, int text_len, bo
 				out_bitmask <<= scale;
 			}
 		}
+		char_delay();
 		// render character in 8 column high pieces, making them scale times as wide
 		for (uint8_t yy = 0; yy < scale; yy++)	{ // for each group of 8 pixels high (y-direction)
 
