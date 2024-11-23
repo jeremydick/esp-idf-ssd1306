@@ -153,7 +153,6 @@ ssd1306_display_text_xS(SSD1306_t * dev, int page, char * text, int text_len, bo
 				out_bitmask <<= scale;
 			}
 		}
-		char_delay();
 		// render character in 8 column high pieces, making them scale times as wide
 		for (uint8_t yy = 0; yy < scale; yy++)	{ // for each group of 8 pixels high (y-direction)
 
@@ -164,6 +163,7 @@ ssd1306_display_text_xS(SSD1306_t * dev, int page, char * text, int text_len, bo
 				}
 			}
 
+			char_delay();
 			if (invert) ssd1306_invert(image, used_columns * scale);
 			if (dev->_flip) ssd1306_flip(image, used_columns * scale);
 			if (dev->_address == SPIAddress) {
@@ -189,6 +189,7 @@ ssd1306_display_text_xS(SSD1306_t * dev, int page, char * text, int text_len, bo
 					image[xx*scale+idx] = 0;
 				}
 			}
+			char_delay();
 			if (invert) ssd1306_invert(image, used_columns * scale);
 			if (dev->_flip) ssd1306_flip(image, used_columns * scale);
 			if (dev->_address == SPIAddress) {
